@@ -1,0 +1,95 @@
+{
+  "results": [
+    {
+      "user_id": "1234567",
+      "id": "6XGgmFVcrG5RRjVr",
+      "project_id": "6XGgm6PHrGgMpCFX",
+      "section_id": "6fFPHV272WWh3gpW",
+      "parent_id": null,
+      "added_by_uid": "1234567",
+      "assigned_by_uid": null,
+      "responsible_uid": null,
+      "labels": [
+        "priority"
+      ],
+      "deadline": {
+        "date": "2025-02-12",
+        "lang": "en"
+      },
+      "duration": {
+        "amount": 30,
+        "unit": "minute"
+      },
+      "is_collapsed": false,
+      "checked": false,
+      "is_deleted": false,
+      "added_at": "2025-01-15T10:30:00Z",
+      "completed_at": null,
+      "completed_by_uid": null,
+      "updated_at": "2025-01-17T10:30:00Z",
+      "due": {
+        "date": "2025-02-12",
+        "is_recurring": false,
+        "lang": "en",
+        "string": "tomorrow"
+      },
+      "priority": 1,
+      "child_order": 1,
+      "order_key": "a1V",
+      "content": "Buy milk",
+      "description": "Pick up organic milk",
+      "note_count": 0,
+      "day_order": 1,
+      "completed_count": 3,
+      "postponed_count": 1
+    },
+    {
+      "id": "6XGgmFVcrG5RRjVs",
+      "project_id": "6XGgm6PHrGgMpCFX",
+      "content": "Купить молоко 🥛 — café résumé",
+      "priority": 4,
+      "labels": [
+        "shopping",
+        "дом"
+      ],
+      "due": null,
+      "checked": false
+    },
+    {
+      "id": "6XGgmFVcrG5RRjVt",
+      "project_id": "6XGgm6PHrGgMpCFX",
+      "section_id": "6fFPHV272WWh3gpW",
+      "content": "Ship the release notes",
+      "description": "",
+      "priority": 2,
+      "labels": [],
+      "due": {
+        "date": "2025-02-12",
+        "string": "tomorrow",
+        "is_recurring": true,
+        "datetime": null,
+        "lang": "en"
+      },
+      "checked": false
+    },
+    {
+      "id": "6XGgmFVcrG5RRjVu",
+      "project_id": "6XGgm6PHrGgMpCFX",
+      "content": "Review PR #42",
+      "priority": 3,
+      "due": "2025-03-01",
+      "labels": "work, review"
+    },
+    {
+      "id": 7700011223,
+      "content": "Legacy numeric id task",
+      "priority": "2",
+      "checked": 0,
+      "is_completed": false,
+      "project_id": 990001,
+      "description": "   ",
+      "labels": null
+    }
+  ],
+  "next_cursor": "14540000435w8hj8pXXwPQJJch.X9DBH8ya2Xenok55"
+}

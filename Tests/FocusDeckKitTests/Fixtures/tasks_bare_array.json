@@ -1,0 +1,25 @@
+[
+  {
+    "id": "6XGgmFVcrG5RRjW1",
+    "content": "Bare array task A",
+    "priority": 1,
+    "labels": [],
+    "due": null,
+    "checked": false
+  },
+  {
+    "id": "6XGgmFVcrG5RRjW2",
+    "content": "Bare array task B",
+    "priority": 3,
+    "labels": [
+      "a"
+    ],
+    "due": {
+      "date": "2025-05-05",
+      "string": "May 5",
+      "is_recurring": false,
+      "lang": "en"
+    },
+    "checked": false
+  }
+]

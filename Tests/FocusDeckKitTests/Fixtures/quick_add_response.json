@@ -1,0 +1,26 @@
+{
+  "user_id": "1234567",
+  "id": "6XGgmFVcrG5RRjX1",
+  "project_id": "6XGgm6PHrGgMpCFX",
+  "section_id": null,
+  "parent_id": null,
+  "labels": [
+    "shopping",
+    "groceries"
+  ],
+  "checked": false,
+  "is_deleted": false,
+  "added_at": "2026-09-15T09:00:00Z",
+  "completed_at": null,
+  "updated_at": null,
+  "due": {
+    "date": "2026-09-15",
+    "is_recurring": false,
+    "lang": "en",
+    "string": "today"
+  },
+  "priority": 2,
+  "child_order": 1,
+  "content": "Buy milk",
+  "description": "Remember to check the expiration date"
+}

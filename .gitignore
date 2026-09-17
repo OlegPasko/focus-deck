@@ -1,0 +1,42 @@
+# Swift build products and local package state
+/.build*/
+/.swiftpm/
+/dist/
+xcuserdata/
+*.xcuserstate
+
+# Local scratch files and generated verification images
+/tmp/
+/docs/previews/spotify/
+/assets/AppIcon.iconset/
+
+# Python and macOS caches
+__pycache__/
+*.py[cod]
+.DS_Store
+
+# Local credentials and environment overrides
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# Private credentials, signing material, and runtime data
+*.p12
+*.pfx
+*.pem
+*.key
+*.mobileprovision
+*.provisionprofile
+/focus.json
+/settings.json
+
+# Local agent guidance and publishing workflow
+AGENTS.md
+AGENTS.override.md
+agents.md
+CLAUDE.md
+claude.md
+/docs/distribution/
+/scripts/package_release.sh
+/scripts/prepare_publish.sh
