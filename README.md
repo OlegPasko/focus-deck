@@ -6,9 +6,11 @@
 
 ## Download
 
-[Download Focus Deck for macOS](https://share.everlabs.net/share/c85b2465/index.html) · **Version 1.3.0** · macOS 13+ · Apple silicon and Intel
+[Download Focus Deck for macOS](https://share.everlabs.net/share/d7d12f75/index.html) · **Version 1.4.0** · macOS 13+ · Apple silicon and Intel
 
 The downloadable preview is ad-hoc signed and **not notarized**. If macOS blocks it, follow the download page's installation instructions. Updates are installed manually.
+
+[What’s new](CHANGELOG.md)
 
 ## Features
 
