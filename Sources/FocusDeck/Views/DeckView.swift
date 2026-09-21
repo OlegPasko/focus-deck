@@ -164,7 +164,7 @@ struct DeckView: View {
             Color.black.opacity(0.60).ignoresSafeArea().onTapGesture { if !model.isCreatingTask { model.isEditingFocus = false } }
             VStack(alignment: .leading, spacing: 18) {
                 Text("What are you focusing on?").font(.system(size: 24, weight: .semibold))
-                Text("Add to Todoist Today. Done completes it there.").foregroundStyle(.secondary)
+                Text("Save for later, make next, or focus now.").foregroundStyle(.secondary)
                 TextField("Type your focus", text: $model.draftTitle, axis: .vertical)
                     .textFieldStyle(.plain)
                     .font(.system(size: 22, weight: .medium))
@@ -177,14 +177,10 @@ struct DeckView: View {
                     Text(error).font(.system(size: 12)).foregroundStyle(.orange)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                HStack {
-                    Button("Cancel") { model.isEditingFocus = false }.keyboardShortcut(.escape, modifiers: []).disabled(model.isCreatingTask)
-                    Spacer()
-                    Button(model.isCreatingTask ? "Adding to Today…" : "Add to Today & focus") { model.applyDraft() }
-                        .buttonStyle(.borderedProminent).tint(Color(red: 0.52, green: 0.40, blue: 0.69))
-                        .keyboardShortcut(.return, modifiers: [.command])
-                        .disabled(model.isCreatingTask || model.isCompleting || model.draftTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
+                TaskCreationActionsView(isCreating: model.isCreatingTask,
+                    isDisabled: model.isCreatingTask || model.isCompleting || model.draftTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                    submit: { model.applyDraft(action: $0) },
+                    cancel: { model.isEditingFocus = false })
             }
             .padding(28)
             .frame(maxWidth: 560)

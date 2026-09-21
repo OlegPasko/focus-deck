@@ -59,6 +59,92 @@ final class AppModelTodoistTests: XCTestCase {
         XCTAssertFalse(model.isCompleting)
     }
 
+    func testJustAddPreservesFocusTimerHistoryAndNextTask() async {
+        CreationProtocol.today = [["id": "existing", "content": "Existing next"]]
+        await model.refreshToday()
+        let original = model.store.state
+        await model.applyDraft(action: .today)?.value
+        XCTAssertEqual(model.store.state, original)
+        XCTAssertEqual(model.nextTodayTask?.id, "existing")
+        XCTAssertTrue(model.todayTasks.contains { $0.id == "created-42" })
+        XCTAssertFalse(model.isEditingFocus)
+        XCTAssertTrue(model.draftTitle.isEmpty)
+        XCTAssertEqual(CreationProtocol.commands.count, 1)
+    }
+
+    func testMakeNextPersistsAcrossRestartAndSyncThenAdvances() async {
+        let original = FocusStore.readState(at: model.store.fileURL)?.current
+        await model.applyDraft(action: .next)?.value
+        XCTAssertEqual(model.store.state.current, original)
+        XCTAssertEqual(model.store.state.nextTodoistTaskID, "todoist:created-42")
+        XCTAssertTrue(model.store.state.history.isEmpty)
+        CreationProtocol.today = [
+            ["id": "existing", "content": "Earlier in Todoist"],
+            ["id": "created-42", "content": "Captured idea"]
+        ]
+        let client = TodoistClient(token: "test-token", session: session)
+        let restarted = AppModel(store: FocusStore(fileURL: directory.appendingPathComponent("focus.json")),
+                                 settings: model.settings, loadCredentials: false, makeTodoistClient: { client })
+        await restarted.refreshToday()
+        XCTAssertEqual(restarted.nextTodayTask?.id, "created-42")
+        await restarted.completeCurrent()?.value
+        XCTAssertEqual(restarted.store.state.current?.id, "todoist:created-42")
+        XCTAssertNil(restarted.store.state.nextTodoistTaskID)
+        XCTAssertEqual(restarted.nextTodayTask?.id, "existing")
+    }
+
+    func testMissingPinnedTaskFallsBackToTodayOrderButFailureKeepsIt() async {
+        await model.applyDraft(action: .next)?.value
+        CreationProtocol.failToday = true
+        await model.refreshToday()
+        XCTAssertEqual(model.store.state.nextTodoistTaskID, "todoist:created-42")
+        CreationProtocol.failToday = false
+        CreationProtocol.today = [["id": "existing", "content": "Remaining today"]]
+        await model.refreshToday()
+        XCTAssertNil(model.store.state.nextTodoistTaskID)
+        XCTAssertEqual(model.nextTodayTask?.id, "existing")
+    }
+
+    func testSelectingPinnedTaskManuallyConsumesNextChoice() async {
+        await model.applyDraft(action: .next)?.value
+        model.focus(on: TodoistTask(id: "created-42", content: "Captured idea"))
+        XCTAssertNil(model.store.state.nextTodoistTaskID)
+        XCTAssertEqual(model.store.state.current?.id, "todoist:created-42")
+    }
+
+    func testCaptureModesNeverStartFocusWhenDeckIsEmpty() async {
+        model.store.mutate { $0.current = nil }
+        await model.applyDraft(action: .today)?.value
+        XCTAssertNil(model.store.state.current)
+        model.draftTitle = "Another idea"
+        await model.applyDraft(action: .next)?.value
+        XCTAssertNil(model.store.state.current)
+        XCTAssertEqual(model.store.state.nextTodoistTaskID, "todoist:created-42")
+    }
+
+    func testCaptureRetryCanMakeNextWithoutDuplicatingOrSwitchingFocus() async {
+        CreationProtocol.failTaskReadOnce = true
+        await model.applyDraft(action: .today)?.value
+        XCTAssertNotNil(model.draftError)
+        XCTAssertNil(model.store.state.nextTodoistTaskID)
+        await model.applyDraft(action: .next)?.value
+        XCTAssertEqual(model.store.state.current?.id, "original")
+        XCTAssertEqual(model.store.state.nextTodoistTaskID, "todoist:created-42")
+        XCTAssertEqual(CreationProtocol.commands[0]["uuid"] as? String,
+                       CreationProtocol.commands[1]["uuid"] as? String)
+    }
+
+    func testMakeNextPreservesConcurrentFocusAndUnrelatedQueue() async {
+        let creation = model.applyDraft(action: .next)
+        let other = FocusStore(fileURL: directory.appendingPathComponent("focus.json"), writerName: "agent")
+        other.setFocus(title: "Another focus", itemID: "newer")
+        other.setQueue([FocusItem(id: "queued", title: "Unrelated task")])
+        await creation?.value
+        XCTAssertEqual(model.store.state.current?.id, "newer")
+        XCTAssertEqual(model.store.state.queue.map(\.id), ["queued"])
+        XCTAssertEqual(model.store.state.nextTodoistTaskID, "todoist:created-42")
+    }
+
     func testLaterUsesTodayInsteadOfLocalQueueOrPicker() async {
         model.store.setFocus(title: "Current", source: .todoist, itemID: "todoist:current")
         model.store.setQueue([FocusItem(title: "Old local queue")])
@@ -267,6 +353,8 @@ private final class CreationProtocol: URLProtocol {
                 object = ["sync_status": [key: ["error": "Rejected", "http_code": 403]]]
             } else {
                 object = ["sync_status": [key: "ok"], "temp_id_mapping": [tempID: "created-42"]]
+                Self.today.removeAll { $0["id"] as? String == "created-42" }
+                Self.today.append(["id": "created-42", "content": Self.title])
             }
         } else if path == "/api/v1/tasks/filter" {
             Self.filters.append(URLComponents(url: request.url!, resolvingAgainstBaseURL: false)!

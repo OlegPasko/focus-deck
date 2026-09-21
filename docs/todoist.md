@@ -100,3 +100,9 @@ existing close endpoint and advances only after success. The app-model tests cov
 creation, local persistence, completion, failures, concurrent focus changes, and retries.
 See the [official Sync documentation](https://developer.todoist.com/api/v1/#tag/Sync)
 for request encoding and command idempotency.
+
+### Capture without changing focus
+
+The editor offers **Just add to Today**, **Add to Today & make next**, and **Add to Today & focus**. All create an Inbox task due today. The first two preserve the current task, its timer, wallpaper, and history. Making a task next saves its `todoist:{id}` in `focus.json` as `nextTodoistTaskID` under the existing file lock; it does not change Todoist's own ordering. A newer explicit next choice replaces the previous one.
+
+Later and Done prefer that task while it remains in Todoist Today. The choice survives refreshes and restarts, is consumed when the task becomes current, and is cleared if a successful Today refresh no longer includes it. Failed refreshes retain the choice. Without an explicit choice, the app follows Todoist's returned order.

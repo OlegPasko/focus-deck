@@ -4,6 +4,8 @@ import Combine
 import ServiceManagement
 import FocusDeckKit
 
+enum TaskCreationAction { case today, next, focus }
+
 /// One place that holds the shared state, the settings and the Todoist connection.
 @MainActor
 final class AppModel: ObservableObject {
@@ -36,7 +38,12 @@ final class AppModel: ObservableObject {
     private var advanceWhenTodayLoads = false
 
     var nextTodayTask: TodoistTask? {
-        todayTasks.first { !$0.isCompleted && "todoist:\($0.id)" != store.state.current?.id }
+        nextTodayTask(in: store.state)
+    }
+
+    private func nextTodayTask(in state: FocusDeckKit.FocusState) -> TodoistTask? {
+        let eligible = todayTasks.filter { !$0.isCompleted && "todoist:\($0.id)" != state.current?.id }
+        return eligible.first { "todoist:\($0.id)" == state.nextTodoistTaskID } ?? eligible.first
     }
 
     var laterText: String {
@@ -137,12 +144,12 @@ final class AppModel: ObservableObject {
     // MARK: - Focus commands
 
     @discardableResult
-    func applyDraft() -> Task<Void, Never>? {
+    func applyDraft(action: TaskCreationAction = .focus) -> Task<Void, Never>? {
         guard !isCreatingTask, !isCompleting else { return nil }
         let text = draftTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return nil }
         draftError = nil
-        if let current = store.state.current, current.source == .todoist, current.title == text {
+        if action == .focus, let current = store.state.current, current.source == .todoist, current.title == text {
             draftTitle = ""
             isEditingFocus = false
             return nil
@@ -168,16 +175,29 @@ final class AppModel: ObservableObject {
             do {
                 let task = try await client.createTask(content: pending.title, dueDate: pending.dueDate,
                                                        requestID: pending.requestID)
-                store.adoptCreatedTask(task.asFocusItem(), expectedCurrentID: expectedCurrentID)
+                switch action {
+                case .focus:
+                    store.adoptCreatedTask(task.asFocusItem(), expectedCurrentID: expectedCurrentID)
+                case .next:
+                    store.mutate { $0.nextTodoistTaskID = "todoist:\(task.id)" }
+                case .today:
+                    break
+                }
+                let needsTodayRefresh = !todayLoaded || isLoadingToday
+                advanceWhenTodayLoads = false
+                // An older Today request must not erase this newly created task.
+                todayGeneration += 1
+                isLoadingToday = false
                 todoistTasks.removeAll { $0.id == task.id }
                 todoistTasks.insert(task, at: 0)
                 todayTasks.removeAll { $0.id == task.id }
-                todayTasks.insert(task, at: 0)
+                todayTasks.append(task)
                 pendingCreation = nil
                 draftTitle = ""
                 draftError = nil
                 isEditingFocus = false
                 showsPicker = false
+                if needsTodayRefresh { await refreshToday() }
             } catch {
                 draftError = "Could not add this task to Todoist Today. " + error.localizedDescription
             }
@@ -248,6 +268,7 @@ final class AppModel: ObservableObject {
             todayError = nil
             isLoadingToday = false
             advanceWhenTodayLoads = false
+            store.mutate { $0.nextTodoistTaskID = nil }
             todoistError = nil
             settings.settings.todoistTokenPresent = false
             settings.settings.todoistEnabled = false
@@ -321,6 +342,7 @@ final class AppModel: ObservableObject {
         todayGeneration += 1
         let generation = todayGeneration
         let connectionGeneration = syncGeneration
+        let pinnedAtStart = store.state.nextTodoistTaskID
         isLoadingToday = true
         todayError = nil
         defer { if generation == todayGeneration { isLoadingToday = false } }
@@ -330,12 +352,19 @@ final class AppModel: ObservableObject {
                   connectionGeneration == syncGeneration else { return }
             todayTasks = tasks.filter { !$0.isCompleted && "todoist:\($0.id)" != finishedID }
             todayLoaded = true
-            if advanceWhenTodayLoads {
-                let next = todayTasks.first?.asFocusItem()
+            if advanceWhenTodayLoads || pinnedAtStart != nil {
                 store.mutate { draft in
-                    guard draft.current == nil else { return }
+                    if let pinnedAtStart, draft.nextTodoistTaskID == pinnedAtStart,
+                       !todayTasks.contains(where: { "todoist:\($0.id)" == pinnedAtStart }) {
+                        draft.nextTodoistTaskID = nil
+                    }
+                    guard advanceWhenTodayLoads, draft.current == nil else { return }
+                    let next = nextTodayTask(in: draft)?.asFocusItem()
                     draft.current = next
-                    if let next { draft.queue.removeAll { $0.id == next.id } }
+                    if let next {
+                        draft.queue.removeAll { $0.id == next.id }
+                        if draft.nextTodoistTaskID == next.id { draft.nextTodoistTaskID = nil }
+                    }
                 }
                 advanceWhenTodayLoads = false
             }

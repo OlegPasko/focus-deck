@@ -112,6 +112,7 @@ public struct FocusState: Codable, Equatable, Sendable {
     public var queue: [FocusItem]
     public var history: [FocusItem]
     public var overlay: OverlayMessage?
+    public var nextTodoistTaskID: String? // Explicit next choice in Focus Deck; does not reorder Todoist.
 
     /// Tolerant decoding: a partial file still loads, so one bad writer cannot blank the deck.
     public init(from decoder: Decoder) throws {
@@ -124,11 +125,12 @@ public struct FocusState: Codable, Equatable, Sendable {
         self.queue = (try? container.decodeIfPresent([FocusItem].self, forKey: .queue)) ?? nil ?? []
         self.history = (try? container.decodeIfPresent([FocusItem].self, forKey: .history)) ?? nil ?? []
         self.overlay = (try? container.decodeIfPresent(OverlayMessage.self, forKey: .overlay)) ?? nil
+        self.nextTodoistTaskID = (try? container.decodeIfPresent(String.self, forKey: .nextTodoistTaskID)) ?? nil
     }
 
     public init(revision: Int = 0, writer: String = "app", updatedAt: Date = Date(),
                 current: FocusItem? = nil, queue: [FocusItem] = [], history: [FocusItem] = [],
-                overlay: OverlayMessage? = nil) {
+                overlay: OverlayMessage? = nil, nextTodoistTaskID: String? = nil) {
         self.revision = revision
         self.writer = writer
         self.updatedAt = updatedAt
@@ -136,6 +138,7 @@ public struct FocusState: Codable, Equatable, Sendable {
         self.queue = queue
         self.history = history
         self.overlay = overlay
+        self.nextTodoistTaskID = nextTodoistTaskID
     }
 
     public static func empty() -> FocusState { FocusState() }

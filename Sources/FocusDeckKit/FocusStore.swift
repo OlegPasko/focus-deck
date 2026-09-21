@@ -134,6 +134,7 @@ public final class FocusStore: ObservableObject {
             let item = FocusItem(id: itemID ?? UUID().uuidString, title: trimmed, source: source,
                                  project: project, detail: detail, startedAt: Date())
             draft.current = item
+            if draft.nextTodoistTaskID == item.id { draft.nextTodoistTaskID = nil }
             draft.queue.removeAll { $0.id == item.id }
         }
     }
@@ -154,6 +155,7 @@ public final class FocusStore: ObservableObject {
                 draft.history = Array(draft.history.prefix(50))
             }
             draft.current = item
+            if draft.nextTodoistTaskID == item.id { draft.nextTodoistTaskID = nil }
         }
     }
 
@@ -165,6 +167,7 @@ public final class FocusStore: ObservableObject {
         mutate { draft in
             guard expectedID == nil || draft.current?.id == expectedID else { return }
             if let finished = draft.current {
+                if draft.nextTodoistTaskID == finished.id { draft.nextTodoistTaskID = nil }
                 draft.history.insert(finished, at: 0)
                 draft.history = Array(draft.history.prefix(50))
             }

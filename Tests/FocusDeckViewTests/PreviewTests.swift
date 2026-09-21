@@ -25,6 +25,10 @@ final class PreviewTests: XCTestCase {
             store.setFocus(title: title)
             try render(DeckView(model: model, startsModel: false), name: name, size: size)
         }
+        model.isEditingFocus = true
+        model.draftTitle = "Capture a new idea"
+        try render(DeckView(model: model, startsModel: false), name: "deck-capture-small", size: CGSize(width: 420, height: 360))
+        model.isEditingFocus = false
         store.mutate { $0.current = nil }
         try render(DeckView(model: model, startsModel: false), name: "deck-empty", size: CGSize(width: 700, height: 450))
     }
@@ -67,6 +71,16 @@ final class PreviewTests: XCTestCase {
                     .padding(24).background(Color(red: 0.08, green: 0.08, blue: 0.14))
                 try render(view, name: "meeting-\(seconds)-\(Int(size.width))", size: size)
             }
+        }
+    }
+
+    @MainActor
+    func testRenderTaskCaptureActions() throws {
+        for width in [280, 504] {
+            let view = TaskCreationActionsView(isCreating: false, isDisabled: false, submit: { _ in }, cancel: {})
+                .padding(16).background(Color(red: 0.085, green: 0.075, blue: 0.12))
+                .environment(\.colorScheme, .dark)
+            try render(view, name: "task-capture-\(width)", size: CGSize(width: width + 32, height: 160))
         }
     }
 
