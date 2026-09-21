@@ -4,7 +4,7 @@ import Combine
 import ServiceManagement
 import FocusDeckKit
 
-enum TaskCreationAction { case today, next, focus }
+enum TaskCreationAction { case next, focus }
 
 /// One place that holds the shared state, the settings and the Todoist connection.
 @MainActor
@@ -180,8 +180,6 @@ final class AppModel: ObservableObject {
                     store.adoptCreatedTask(task.asFocusItem(), expectedCurrentID: expectedCurrentID)
                 case .next:
                     store.mutate { $0.nextTodoistTaskID = "todoist:\(task.id)" }
-                case .today:
-                    break
                 }
                 let needsTodayRefresh = !todayLoaded || isLoadingToday
                 advanceWhenTodayLoads = false

@@ -26,7 +26,7 @@ The downloadable preview is ad-hoc signed and **not notarized**. If macOS blocks
 
 1. Download the disk image and drag **Focus Deck** into **Applications**.
 2. Open Settings with **⌘,**. To connect Todoist, copy your token from [Todoist Settings → Integrations → Developer](https://app.todoist.com/app/settings/integrations) and save it in Focus Deck.
-3. Press **⌘E** to capture a task for Today: **Just add to Today** keeps your focus, **Add to Today & make next** selects it as your next task in Focus Deck, and **Add to Today & focus** switches immediately. Use **⌘K** to choose an existing task.
+3. Press **⌘E** to capture a task for Today: **Add to Today** makes it your next task in Focus Deck without switching, while **Add to Today & focus** switches immediately. Use **⌘K** to choose an existing task.
 4. Press **⌘D** to complete it. With Todoist connected, Focus Deck moves to the next task for today.
 5. For music, open the Spotify desktop app and allow Focus Deck to control it when macOS asks.
 

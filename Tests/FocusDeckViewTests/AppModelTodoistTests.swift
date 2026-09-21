@@ -59,19 +59,6 @@ final class AppModelTodoistTests: XCTestCase {
         XCTAssertFalse(model.isCompleting)
     }
 
-    func testJustAddPreservesFocusTimerHistoryAndNextTask() async {
-        CreationProtocol.today = [["id": "existing", "content": "Existing next"]]
-        await model.refreshToday()
-        let original = model.store.state
-        await model.applyDraft(action: .today)?.value
-        XCTAssertEqual(model.store.state, original)
-        XCTAssertEqual(model.nextTodayTask?.id, "existing")
-        XCTAssertTrue(model.todayTasks.contains { $0.id == "created-42" })
-        XCTAssertFalse(model.isEditingFocus)
-        XCTAssertTrue(model.draftTitle.isEmpty)
-        XCTAssertEqual(CreationProtocol.commands.count, 1)
-    }
-
     func testMakeNextPersistsAcrossRestartAndSyncThenAdvances() async {
         let original = FocusStore.readState(at: model.store.fileURL)?.current
         await model.applyDraft(action: .next)?.value
@@ -114,7 +101,7 @@ final class AppModelTodoistTests: XCTestCase {
 
     func testCaptureModesNeverStartFocusWhenDeckIsEmpty() async {
         model.store.mutate { $0.current = nil }
-        await model.applyDraft(action: .today)?.value
+        await model.applyDraft(action: .next)?.value
         XCTAssertNil(model.store.state.current)
         model.draftTitle = "Another idea"
         await model.applyDraft(action: .next)?.value
@@ -122,9 +109,9 @@ final class AppModelTodoistTests: XCTestCase {
         XCTAssertEqual(model.store.state.nextTodoistTaskID, "todoist:created-42")
     }
 
-    func testCaptureRetryCanMakeNextWithoutDuplicatingOrSwitchingFocus() async {
+    func testMakeNextRetryDoesNotDuplicateOrSwitchFocus() async {
         CreationProtocol.failTaskReadOnce = true
-        await model.applyDraft(action: .today)?.value
+        await model.applyDraft(action: .next)?.value
         XCTAssertNotNil(model.draftError)
         XCTAssertNil(model.store.state.nextTodoistTaskID)
         await model.applyDraft(action: .next)?.value

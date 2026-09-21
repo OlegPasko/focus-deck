@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Three ways to capture a task for Today: save without switching, make it next in Focus Deck, or focus immediately.
+- Two ways to capture a task for Today, with all buttons in one row: **Add to Today** makes it next without switching, and **Add to Today & focus** switches immediately.
 - The explicit next-task choice survives synchronization and app restarts; tasks no longer in Today are skipped.
 
 ## 1.4.0 – 2026-09-17

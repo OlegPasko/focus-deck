@@ -164,7 +164,7 @@ struct DeckView: View {
             Color.black.opacity(0.60).ignoresSafeArea().onTapGesture { if !model.isCreatingTask { model.isEditingFocus = false } }
             VStack(alignment: .leading, spacing: 18) {
                 Text("What are you focusing on?").font(.system(size: 24, weight: .semibold))
-                Text("Save for later, make next, or focus now.").foregroundStyle(.secondary)
+                Text("Add your next task, or focus on it now.").foregroundStyle(.secondary)
                 TextField("Type your focus", text: $model.draftTitle, axis: .vertical)
                     .textFieldStyle(.plain)
                     .font(.system(size: 22, weight: .medium))
